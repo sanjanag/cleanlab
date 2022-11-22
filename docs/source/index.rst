@@ -43,7 +43,7 @@ If you're using a scikit-learn-compatible model (option 1), you don't need to tr
 
     from cleanlab.classification import CleanLearning
     from cleanlab.filter import find_label_issues
-    
+
     # Option 1 - works with sklearn-compatible models - just input the data and labels ツ
     label_issues_info = CleanLearning(clf=sklearn_compatible_model).find_label_issues(data, labels)
 
@@ -54,7 +54,7 @@ If you're using a scikit-learn-compatible model (option 1), you don't need to tr
         return_indices_ranked_by='self_confidence',
     )
 
-:py:class:`CleanLearning <cleanlab.classification.CleanLearning>` (option 1) also works with models from most standard ML frameworks by wrapping the model for scikit-learn compliance, e.g. huggingface/tensorflow/keras (using our KerasWrapperModel), pytorch (using skorch package), etc. 
+:py:class:`CleanLearning <cleanlab.classification.CleanLearning>` (option 1) also works with models from most standard ML frameworks by wrapping the model for scikit-learn compliance, e.g. huggingface/tensorflow/keras (using our KerasWrapperModel), pytorch (using skorch package), etc.
 
 By default, :py:meth:`find_label_issues <cleanlab.filter.find_label_issues>` returns a boolean mask of label issues. You can instead return the indices of potential mislabeled examples by setting `return_indices_ranked_by` in :py:meth:`find_label_issues <cleanlab.filter.find_label_issues>`. The indices are ordered by likelihood of a label error (estimated via :py:meth:`rank.get_label_quality_scores <cleanlab.rank.get_label_quality_scores>`).
 
@@ -83,7 +83,7 @@ When the :py:meth:`.fit() <cleanlab.classification.CleanLearning.fit>` method is
    predictions = cl.predict(test_data)
 
 
-4. Dataset curation: fix dataset-level issues 
+4. Dataset curation: fix dataset-level issues
 ---------------------------------------------
 
 cleanlab's :py:mod:`dataset <cleanlab.dataset>` module helps you deal with dataset-level issues by  :ref:`finding overlapping classes <cleanlab.dataset.find_overlapping_classes>` (classes to merge), :ref:`rank class-level label quality <cleanlab.dataset.rank_classes_by_label_quality>` (classes to keep/delete), and :ref:`measure overall dataset health <cleanlab.dataset.overall_label_health_score>` (to track dataset quality as you make adjustments).
@@ -106,17 +106,17 @@ The example below shows how to view all dataset-level issues in one line of code
    :hidden:
    :caption: Tutorials
 
-   tutorials/indepth_overview
-   tutorials/image
-   tutorials/text
-   tutorials/tabular
-   tutorials/audio
-   tutorials/dataset_health
-   tutorials/outliers
-   tutorials/multiannotator
-   tutorials/token_classification
-   tutorials/pred_probs_cross_val
-   tutorials/faq
+   Overview <tutorials/indepth_overview>
+   Image Classification <tutorials/image>
+   Text Classification <tutorials/text>
+   Working with Tabular Data <tutorials/tabular>
+   Audio Classification <tutorials/audio>
+   Dataset Healthcheck <tutorials/dataset_health>
+   Detect outliers in dataset <tutorials/outliers>
+   Working with multi-annotator dataset <tutorials/multiannotator>
+   Token Classification  <tutorials/token_classification>
+   Find label errors in whole dataset <tutorials/pred_probs_cross_val>
+   FAQ <tutorials/faq>
 
 .. toctree::
    :caption: API Reference
