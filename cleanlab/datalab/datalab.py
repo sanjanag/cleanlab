@@ -100,7 +100,7 @@ class Datalab:
         self.imagelab = None
         if image_key:
             if isinstance(self.data, Dataset):
-                self.imagelab = Imagelab(hf_dataset=self.data, image_key=image_key)
+                self.imagelab = Imagelab(hf_dataset=self.data, image_key=image_key, verbosity=0)
             else:
                 raise ValueError(
                     "Other data formats not supported for cleanvision checks as of now"
@@ -274,12 +274,8 @@ class Datalab:
                 if issue in issue_types_copy
             }
             if self.imagelab:
-                print("Running default issue checks on raw images")
-                # todo implement default issue types on imagelab side
                 issue_types_copy["image_issue_types"] = {
-                    "dark": {},
-                    "light": {},
-                    "near_duplicates": {},
+                    issue_type: {} for issue_type in self.imagelab.list_default_issue_types()
                 }
 
         # Check that all required arguments are provided.
@@ -288,6 +284,11 @@ class Datalab:
         # Remove None values from argument list, rely on default values in IssueManager
         for key, value in issue_types_copy.items():
             issue_types_copy[key] = {k: v for k, v in value.items() if v is not None}
+
+        # Remove imagelab near/exact duplicate checks
+        if "near_duplicate" in issue_types_copy and "image_issue_types" in issue_types_copy:
+            issue_types_copy["image_issue_types"].pop("near_duplicates")
+            issue_types_copy["image_issue_types"].pop("exact_duplicates")
         return issue_types_copy
 
     @staticmethod
@@ -598,6 +599,10 @@ class Datalab:
                 failed_managers.append(issue_manager)
 
         try:
+            if self.verbosity:
+                print(
+                    f'Finding {", ".join(issue_types_copy["image_issue_types"].keys())} images ...'
+                )
             self.imagelab.find_issues(issue_types=issue_types_copy["image_issue_types"])
             self.data_issues.collect_statistics_from_issue_manager(self.imagelab)
             self.data_issues._collect_results_from_imagelab(self.imagelab)
@@ -609,6 +614,10 @@ class Datalab:
             print(
                 f"Audit complete. {self.issue_summary['num_issues'].sum()} issues found in the dataset."
             )
+            if self.imagelab:
+                print(
+                    f"{self.imagelab.issue_summary['num_images'].sum()} images issues found in the dataset."
+                )
         if failed_managers:
             print(f"Failed to check for these issue types: {failed_managers}")
 
@@ -674,6 +683,7 @@ class Datalab:
                 include_description=include_description,
             )
         )
+        print("\n\n")
         self.imagelab.report(num_images=num_examples, verbosity=verbosity)
 
     def save(self, path: str, force: bool = False) -> None:
