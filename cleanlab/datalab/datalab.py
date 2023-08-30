@@ -310,6 +310,7 @@ class Datalab:
         verbosity: Optional[int] = None,
         include_description: bool = True,
         show_summary_score: bool = False,
+        max_prevalence: float = 0.5,
     ) -> None:
         """Prints informative summary of all issues.
 
@@ -325,6 +326,9 @@ class Datalab:
         include_description :
             Whether or not to include a description of each issue type in the report.
             Consider setting this to ``False`` once you're familiar with how each issue type is defined.
+
+        max_prevalence :
+            Filter out issues from the report that are present in more than `max_prevalence` fraction of the dataset.
 
         See Also
         --------
@@ -344,7 +348,7 @@ class Datalab:
             show_summary_score=show_summary_score,
             imagelab=self._imagelab,
         )
-        reporter.report(num_examples=num_examples)
+        reporter.report(num_examples=num_examples, max_prevalence=max_prevalence)
 
     @property
     def issues(self) -> pd.DataFrame:

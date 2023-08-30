@@ -140,11 +140,15 @@ class ImagelabReporterAdapter(Reporter):
         )
         self.imagelab = imagelab
 
-    def report(self, num_examples: int) -> None:
-        super().report(num_examples)
+    def report(self, num_examples: int, max_prevalence: float = 0.5) -> None:
+        super().report(num_examples, max_prevalence=max_prevalence)
         print("\n\n")
         self.imagelab.report(
-            num_images=num_examples, print_summary=False, verbosity=0, show_id=True
+            num_images=num_examples,
+            print_summary=False,
+            verbosity=0,
+            show_id=True,
+            max_prevalence=max_prevalence,
         )
 
 

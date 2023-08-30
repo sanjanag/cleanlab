@@ -66,7 +66,7 @@ class Reporter:
         self.include_description = include_description
         self.show_summary_score = show_summary_score
 
-    def report(self, num_examples: int) -> None:
+    def report(self, num_examples: int, max_prevalence: float) -> None:
         """Prints a report about identified issues in the data.
 
         Parameters
@@ -74,9 +74,9 @@ class Reporter:
         num_examples :
             The number of examples to include in the report for each issue type.
         """
-        print(self.get_report(num_examples=num_examples))
+        print(self.get_report(num_examples=num_examples, max_prevalence=max_prevalence))
 
-    def get_report(self, num_examples: int) -> str:
+    def get_report(self, num_examples: int, max_prevalence) -> str:
         """Constructs a report about identified issues in the data.
 
         Parameters
@@ -99,7 +99,21 @@ class Reporter:
         """
         report_str = ""
         issue_summary = self.data_issues.issue_summary
-        issue_summary_sorted = issue_summary.sort_values(by="num_issues", ascending=False)
+
+        # Filter issues that exceed a threshold
+        issues_to_report = []
+        for row in issue_summary.itertuples(index=False):
+            if getattr(row, "num_issues") / len(self.data_issues.get_issues()) < max_prevalence:
+                issues_to_report.append(getattr(row, "issue_type"))
+            else:
+                print(
+                    f"Removing {getattr(row, 'issue_type')} from potential issues in the dataset as it exceeds "
+                    f"max_prevalence={max_prevalence} "
+                )
+
+        issue_summary_sorted = issue_summary[
+            issue_summary["issue_type"].isin(issues_to_report)
+        ].sort_values(by="num_issues", ascending=False)
         report_str += self._write_summary(summary=issue_summary_sorted)
 
         issue_types = self._get_issue_types(issue_summary_sorted)
