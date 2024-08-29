@@ -22,9 +22,7 @@ jobs:
           git -C cleanlab-docs diff --name-only --output changed_files.txt HEAD HEAD~1  master/
       
       - uses: actions/checkout@v4
-        with:
-          path: 'main'
-      - run: python main/.github/update_assistant.py
+      - run: python .github/update_assistant.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_VECTOR_STORE_ID: ${{ secrets.VECTOR_STORE_ID }}
