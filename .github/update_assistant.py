@@ -1,36 +1,62 @@
+import json
 import os
 
 from openai import OpenAI
 
+
+def get_changed_files(docs_dir, branch):
+    os.system(
+        f"git -C {docs_dir} diff --name-only --output changed_files.txt HEAD HEAD~1 {branch}/"
+    )
+    with open(f"{docs_dir}/changed_files.txt", "r") as f:
+        changed_files = f.readlines()
+    changed_files = [changed_file.strip() for changed_file in changed_files]
+    changed_files = [file for file in changed_files if file.endswith(".html")]
+    changed_files = [file[len(branch) + 1 :] for file in changed_files]
+    return changed_files
+
+
 if __name__ == "__main__":
-    openai_client = OpenAI()
-    assistant_id = os.environ["OPENAI_ASSISTANT_ID"]
-    assistant = openai_client.beta.assistants.retrieve(assistant_id)
 
-    # Ready the files for upload to OpenAI
-    file_extensions = [".html"]
-    file_paths = []
-    for root, dirs, files in os.walk(os.getcwd() + "/cleanlab-docs/stable"):
-        for file in files:
-            if any(file.endswith(ext) for ext in file_extensions):
-                file_paths.append(os.path.join(root, file))
-    print("Number of files:", len(file_paths))
-    file_streams = [open(path, "rb") for path in file_paths]
+    branch = "master"
+    docs_dir = os.path.join(os.getcwd(), "cleanlab-docs")
+    mapping_path = os.path.join(os.getcwd(), "main", ".github/openai_file_mapping.json")
+    vector_store_id = os.environ["OPENAI_VECTOR_STORE_ID"]
 
-    current_vector_stores = assistant.tool_resources.file_search.vector_store_ids
-    assert len(current_vector_stores) == 1
+    changed_files = get_changed_files(docs_dir, branch)
+    print("Changed files:")
+    for file in changed_files:
+        print(file)
 
-    current_vector_store_id = current_vector_stores[0]
-    new_vector_store = openai_client.beta.vector_stores.create(name="HTML Docs")
+    print("Deleting stale files")
+    with open("openai_file_mapping.json", "r") as f:
+        openai_file_mappping = json.load(f)
 
-    file_batch = openai_client.beta.vector_stores.file_batches.upload_and_poll(
-        vector_store_id=new_vector_store.id, files=file_streams
-    )
-    print(f"Uploaded files to vector store: {new_vector_store.id}")
-    assistant = openai_client.beta.assistants.update(
-        assistant_id=assistant_id,
-        tool_resources={"file_search": {"vector_store_ids": [new_vector_store.id]}},
-    )
+    client = OpenAI()
 
-    openai_client.beta.vector_stores.delete(vector_store_id=current_vector_store_id)
-    print(f"Deleted vector store {current_vector_store_id}")
+    for file in changed_files:
+        file_id = openai_file_mappping.get(file, None)
+        if file_id:
+            print(f"Deleting file, path: {file}, file_id: {file_id}")
+            client.beta.vector_stores.files.delete(vector_store_id=vector_store_id, file_id=file_id)
+            client.files.delete(file_id)
+
+    print("Uploading changed files")
+    new_files = [
+        client.files.create(
+            file=open(os.path.join(docs_dir, branch, file_path), "rb"), purpose="assistants"
+        )
+        for file_path in changed_files
+    ]
+    changed_files_mapping = {filepath: file.id for filepath, file in zip(changed_files, new_files)}
+
+    print("Uploading changed files as vector store files")
+    vector_store_files = [
+        client.beta.vector_stores.files.create(vector_store_id=vector_store_id, file_id=file.id)
+        for file in new_files
+    ]
+    new_openai_file_mappping = {**openai_file_mappping, **changed_files_mapping}
+
+    print("Writing new mapping")
+    with open(mapping_path, "w") as f:
+        json.dump(new_openai_file_mappping, f)
