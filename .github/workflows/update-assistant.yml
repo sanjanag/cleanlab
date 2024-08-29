@@ -6,16 +6,20 @@ jobs:
   update-docs-assistant:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: 'cleanlab/cleanlab-docs'
-          path: 'cleanlab-docs'
-      
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
       - name: Install requirements
         run: pip install openai
+      
+      - uses: actions/checkout@v4
+        with:
+          repository: 'cleanlab/cleanlab-docs'
+          path: 'cleanlab-docs'
+      - name: Get changed files
+        run:
+          git diff --name-only --output changed_files.txt HEAD HEAD~1 master/
+      
       - uses: actions/checkout@v4
         with:
           path: 'main'

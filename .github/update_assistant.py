@@ -5,9 +5,6 @@ from openai import OpenAI
 
 
 def get_changed_files(docs_dir, branch):
-    os.system(
-        f"git -C {docs_dir} diff --name-only --output changed_files.txt HEAD HEAD~1 {branch}/"
-    )
     with open(f"{docs_dir}/changed_files.txt", "r") as f:
         changed_files = f.readlines()
     changed_files = [changed_file.strip() for changed_file in changed_files]
