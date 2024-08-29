@@ -27,5 +27,9 @@ jobs:
       - run: python main/.github/update_assistant.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_ASSISTANT_ID: ${{ secrets.ASSISTANT_ID }}
           OPENAI_VECTOR_STORE_ID: ${{ secrets.VECTOR_STORE_ID }}
+      - name: Push new mapping
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Updated file mapping for openai
+          file_pattern: openai_file_mapping.json
