@@ -16,9 +16,10 @@ jobs:
         with:
           repository: 'cleanlab/cleanlab-docs'
           path: 'cleanlab-docs'
+          fetch-depth: '2'
       - name: Get changed files
         run:
-          git -C cleanlab-docs diff --name-only --output changed_files.txt HEAD HEAD^  master/
+          git -C cleanlab-docs diff --name-only --output changed_files.txt HEAD HEAD~1  master/
       
       - uses: actions/checkout@v4
         with:
