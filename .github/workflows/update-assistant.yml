@@ -11,17 +11,22 @@ jobs:
           python-version: "3.11"
       - name: Install requirements
         run: pip install openai
-      
+      - run:
+          echo $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
         with:
           repository: 'cleanlab/cleanlab-docs'
           path: 'cleanlab-docs'
           fetch-depth: '2'
+      - run:
+          echo $GITHUB_WORKSPACE
       - name: Get changed files
         run:
           git -C cleanlab-docs diff --name-only --output changed_files.txt HEAD HEAD~1  master/
       
       - uses: actions/checkout@v4
+      - run:
+          echo $GITHUB_WORKSPACE
       - run: python .github/update_assistant.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
