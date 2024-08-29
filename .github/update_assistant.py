@@ -29,7 +29,7 @@ if __name__ == "__main__":
         print(file)
 
     print("Deleting stale files")
-    with open("openai_file_mapping.json", "r") as f:
+    with open(mapping_path, "r") as f:
         openai_file_mappping = json.load(f)
 
     client = OpenAI()
