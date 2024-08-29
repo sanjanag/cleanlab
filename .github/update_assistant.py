@@ -16,7 +16,7 @@ def get_changed_files(docs_dir, branch):
 if __name__ == "__main__":
 
     branch = "master"
-    docs_dir = os.path.join(os.getcwd(), "cleanlab-docs")
+    docs_dir = os.path.join("../cleanlab-docs")
     mapping_path = os.path.join(os.getcwd(), ".github/openai_file_mapping.json")
     vector_store_id = os.environ["OPENAI_VECTOR_STORE_ID"]
 
